@@ -1,3 +1,4 @@
+from __future__ import print_function
 from cStringIO import StringIO
 import hashlib
 import gzip
@@ -57,7 +58,7 @@ class SitemapGenerator(object):
 
     def out(self, string, min_level=1):
         if self.verbosity >= min_level:
-            print string
+            print(string)
 
     def write(self):
         self.out('Generating sitemaps.', 1)
