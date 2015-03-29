@@ -1,9 +1,18 @@
 from __future__ import print_function
-from cStringIO import StringIO
+import sys
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 import hashlib
 import gzip
 import os
 import subprocess
+
+if sys.version_info[0] < 3:
+    PY_3K = False
+else:
+    PY_3K = True
 
 from django.contrib.sitemaps import ping_google
 from django.core.exceptions import ImproperlyConfigured
@@ -168,10 +177,14 @@ class SitemapGenerator(object):
                         self.storage.delete(gzipped_path)
 
                     self.out('Compressing...', 2)
-                    buf = StringIO()
-                    with gzip.GzipFile(fileobj=buf, mode="w") as f:
-                        f.write(output)
-                    self.storage.save(gzipped_path, ContentFile(buf.getvalue()))
+                    if PY_3K:
+                        file_data = gzip.compress(bytes(output, 'UTF-8'))
+                        self.storage.save(gzipped_path, ContentFile(file_data))
+                    else:
+                        buf = StringIO()
+                        with gzip.GzipFile(fileobj=buf, mode="w") as f:
+                            f.write(output)
+                        self.storage.save(gzipped_path, ContentFile(buf.getvalue()))
                 except OSError:
                     self.out("Compress %s file error" % path)
 
